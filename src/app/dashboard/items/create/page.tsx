@@ -1,69 +1,69 @@
 "use client";
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ItemStatus } from "@/types";
-import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+
+import { ArrowLeft, Loader2 } from "lucide-react";
+
+const formSchema = z.object({
+  title: z.string().min(1, "Title is required").max(100, "Title too long"),
+  description: z.string().optional(),
+  status: z.enum(["active", "inactive", "archived"]),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 export default function CreateItemPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    status: "active" as ItemStatus,
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      status: "active",
+    },
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
-    if (!formData.title.trim()) {
-      newErrors.title = "Title is required";
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => {
-        const next = { ...prev };
-        delete next[name];
-        return next;
-      });
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
-
-    setIsLoading(true);
-
-    // Simulate API call — Phase 1: just log, Phase 2: real API
+  const onSubmit = async (values: FormValues) => {
     await new Promise((resolve) => setTimeout(resolve, 800));
-    console.log("Creating item:", formData);
-
-    setIsLoading(false);
+    console.log("Creating item:", values);
     router.push("/dashboard/items");
   };
 
   return (
     <DashboardLayout>
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-2xl mx-auto flex flex-col gap-6">
         <div className="flex items-center gap-4">
-          <Link
-            href="/dashboard/items"
-            className="p-2 rounded-md hover:bg-accent transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/dashboard/items">
+              <ArrowLeft className="size-4" />
+            </Link>
+          </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Create Item</h1>
             <p className="text-muted-foreground mt-1">
@@ -72,72 +72,97 @@ export default function CreateItemPage() {
           </div>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="bg-card border rounded-lg shadow-sm p-8 space-y-6"
-        >
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Title <span className="text-destructive">*</span>
-            </label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring ${
-                errors.title ? "border-destructive" : ""
-              }`}
-              placeholder="Enter item title"
-            />
-            {errors.title && (
-              <p className="text-sm text-destructive mt-1">{errors.title}</p>
-            )}
-          </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Item Details</CardTitle>
+            <CardDescription>
+              Fill in the information below to create a new item.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="flex flex-col gap-6"
+              >
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Title <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter item title"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-          <div>
-            <label className="block text-sm font-medium mb-2">Description</label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows={4}
-              className="w-full px-3 py-2 border rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-              placeholder="Enter item description (optional)"
-            />
-          </div>
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Enter item description (optional)"
+                          rows={4}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-          <div>
-            <label className="block text-sm font-medium mb-2">Status</label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="archived">Archived</option>
-            </select>
-          </div>
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="inactive">Inactive</SelectItem>
+                          <SelectItem value="archived">Archived</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-          <div className="flex items-center gap-4 pt-4">
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
-            >
-              {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-              {isLoading ? "Creating..." : "Create Item"}
-            </button>
-            <Link
-              href="/dashboard/items"
-              className="px-4 py-2 border rounded-md hover:bg-accent transition-colors text-sm font-medium"
-            >
-              Cancel
-            </Link>
-          </div>
-        </form>
+                <div className="flex items-center gap-4 pt-2">
+                  <Button type="submit" disabled={form.formState.isSubmitting}>
+                    {form.formState.isSubmitting && (
+                      <Loader2 className="size-4 animate-spin" data-icon="inline-start" />
+                    )}
+                    Create Item
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <Link href="/dashboard/items">Cancel</Link>
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
       </div>
     </DashboardLayout>
   );
