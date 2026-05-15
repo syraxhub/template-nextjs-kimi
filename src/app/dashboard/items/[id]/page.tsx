@@ -1,11 +1,15 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { getItemById } from "@/lib/mock-data";
+import { getItemById, mockItems } from "@/lib/mock-data";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Pencil } from "lucide-react";
 
 interface ItemDetailPageProps {
   params: Promise<{ id: string }>;
+}
+
+export function generateStaticParams() {
+  return mockItems.map((item) => ({ id: item.id }));
 }
 
 export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
