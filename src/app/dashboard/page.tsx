@@ -1,6 +1,6 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { mockItems, mockActivities, getStatusCounts } from "@/lib/mock-data";
-import { Activity, Item } from "lucide-react";
+import { Activity, Package } from "lucide-react";
 
 export default function DashboardPage() {
   const counts = getStatusCounts();
@@ -51,7 +51,7 @@ export default function DashboardPage() {
                   className="flex items-center justify-between py-3 border-b last:border-0"
                 >
                   <div className="flex items-center gap-3">
-                    <Item className="h-4 w-4 text-muted-foreground" />
+                    <Package className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">{item.title}</p>
                       <p className="text-xs text-muted-foreground">
