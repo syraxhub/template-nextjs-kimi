@@ -1,5 +1,5 @@
-@import "./_tw-animate.css";
-@import "./_shadcn-tailwind.css";
+@import "../../node_modules/tw-animate-css/dist/tw-animate.css";
+@import "../../node_modules/shadcn/dist/tailwind.css";
 
 @tailwind base;
 
